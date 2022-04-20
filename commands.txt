@@ -1,0 +1,2 @@
+g++ -std=c++17 carver.cpp
+./a.out stars.pgm 80 0
