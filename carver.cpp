@@ -230,7 +230,7 @@ public:
                 hold1 = cumulativeMatrix[i][minIndex-1];
             }
             
-            if (minIndex == col+1){
+            if (minIndex >= col-1){
                hold3 = 99999;
             }
             else{
@@ -274,9 +274,15 @@ public:
             }
 
             minIndex = indexHolder;
-            main[i].erase(main[i].begin() + minIndex);
-         }
-        
+            if (indexHolder < main[i].size()){
+            main[i].erase(main[i].begin() + indexHolder);}
+            else{
+            std::cout << "EEK" << std::endl;
+                main[i].pop_back();
+            }
+            
+            
+        }
         //row = row -1;
         col = col - 1;
         
@@ -315,6 +321,7 @@ int main(int argc, char *argv[]) {
     std::fstream myfile (filename.c_str());
     if(!(myfile)){
         std::cout << "The file was not opened" << std::endl;
+        return 0;
     }
     
     std::string holder;
