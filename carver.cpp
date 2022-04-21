@@ -1,3 +1,9 @@
+/*
+	Harvey Petersen hrp3@uakron.edu
+	Algorithms Spring 2022
+	Project 3
+*/
+
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -7,19 +13,21 @@
 
 class Picture{
 private:
-     std::vector<std::vector<int>> main;
-     std::vector<std::vector<int>> energyMatrix;
-          std::vector<std::vector<int>> cumulativeMatrix;
-     std::vector<int> builder;
+     std::vector<std::vector<int>> main; //This stores the primary values of the picture
+     std::vector<std::vector<int>> energyMatrix; //This stores the energy matrix when needed
+          std::vector<std::vector<int>> cumulativeMatrix; //This stores the cumulative energy matrix when needed
+     std::vector<int> builder; //Used when building the main matrix
      int col = 0;
      int row = 0;
      int scale = 0;
-     int rowCounter = 0;
+     int rowCounter = 0; //Used when building the main matrix
      int colCounter = 0;
      
-          
+     //No in or out parameters. 
+     //Creates an energy matrix, saved as a class member
      void createEnergyMatrix(){
          std::vector<int> temp;
+        //Clear any previous data
          energyMatrix.clear();
          int value = 0;
          int tempInt1 = 0, tempInt2 = 0, tempInt3 = 0, tempInt4 = 0;
@@ -56,10 +64,10 @@ private:
              temp.clear();
          }
      }
-     
+     //No in or out parameters. Creates a Cumulative Energy Matrix for seam identification
      void createCumulativeMatrix(){
-
          std::vector<int> temp;
+         //Clear any previous data
          cumulativeMatrix.clear();
          int upLeft = 0, upCenter = 0, upRight = 0, minInt = 0;
          for(int i = 0; i < row; i++){
@@ -78,18 +86,18 @@ private:
 
                      minInt = energyMatrix[i][j] + minInt;
                  }
-                 else if (i == 0){ //top row (i == 0)
+                 else if (i == 0){ //top row 
                      minInt = energyMatrix[i][j];
                  }
                  temp.push_back(minInt);
                  
              }
-
              cumulativeMatrix.push_back(temp);
              temp.clear();
          }
      }
-     
+      //Makes the rows into columns and columns into rows
+      //No in or out parameters
       void transpose(){
          std::vector<int> temp;
          std::vector<std::vector<int>> tempVec;
@@ -108,53 +116,25 @@ private:
      }
 
 public:
-     
+     //Default constructor
      Picture(){};
-     
+     //Constructor
      Picture(int column, int rows){
-         std::vector<int> temp;
          col = column;
          row = rows;
          
      }
-     
+     //Destructor
      ~Picture(){
      };
-
-     
-     void print(){
-         
-         std::cout << "Main: " << std::endl;
-         for (int i = 0; i < main.size(); i++){
-             for (auto iter = main[i].begin(); iter != main[i].end(); iter++){
-                 std::cout << *iter << " ";
-             }
-             std::cout << std::endl;
-         }
-         
-         std::cout << "Energy Matrix: " << std::endl;
-         for (int i = 0; i < energyMatrix.size(); i++){
-             for (auto iter = energyMatrix[i].begin(); iter != energyMatrix[i].end(); iter++){
-                 std::cout << *iter << " ";
-             }
-             std::cout << std::endl;
-         }
-         
-         std::cout << "Cumulative Energy Matrix: " << std::endl;
-         for (int i = 0; i < cumulativeMatrix.size(); i++){
-             for (auto iter = cumulativeMatrix[i].begin(); iter != cumulativeMatrix[i].end(); iter++){
-                 std::cout << *iter << " ";
-             }
-             std::cout << std::endl;
-         }
-     }
-
+     //Sets the scale value. Takes in one int, no return.
      void setScale(int value){
          scale = value;
      }
-     
+     //In: A string with a value that will be turned into an int
+     //The value is loaded into the main matrix according to the column and row parameters
      void load(std::string value){
-         builder.push_back(stoi(value));         
+         builder.push_back(stoi(value));
          colCounter++;
          if (colCounter == col){
              rowCounter++;
@@ -167,8 +147,10 @@ public:
          }
      }
      
+     //No input or output
+     //Carves the least energetic seam out of the main matrix
      void carve(){
-     
+        //Each carve uses a fresh energy matrix
         createEnergyMatrix();
         createCumulativeMatrix();
          //cumulative array exists, now find the smallest value at the bottom and work back up
@@ -205,9 +187,8 @@ public:
             }
         }
         main[row-1].erase(main[row-1].begin() + minIndex);
-
         int indexHolder = 0;
-        int hold1 = 123456, hold2 = 123456, hold3 =123456;
+        int hold1 = 99999, hold2 = 99999, hold3 = 99999; //Just large numbers
         for (int i = row -2; i >= 0; i--){
             if(minIndex == 0){
                 hold1 = 99999;
@@ -258,26 +239,23 @@ public:
                
                 
             }
-
             minIndex = indexHolder;
             main[i].erase(main[i].begin() + indexHolder);
-
-            
-            
         }
-        //row = row -1;
         col = col - 1;
         
     }
      
+    //No in or out
+    //A horizontal carve flips the matrix, does a vertical carve, then flips it back.
     void carveHorizontal(){
          this->transpose();
          this->carve();
          this->transpose();
      }
-     
+    //In: fstream by reference for the output file, already opened
+    //Writes the main matrix out in the correct format
     void output(std::fstream& file){
-    
         file << "P2" << std::endl;
         file << "# Created by InfranView" << std::endl;
         file << col << " " << row << std::endl;
@@ -290,6 +268,8 @@ public:
          }
     }
     
+    //In: three int values
+    //Returns the smallest of the three values
     int mini(int a, int b, int c){
     
         return std::min(a, std::min(b, c));
@@ -298,24 +278,26 @@ public:
 };
 
 
-
 int main(int argc, char *argv[]) {
 
-    if (argc != 4) {
+    if (argc != 4) { //verify arguments
         std::cout << "wrong format! should be \"a.exe filename # #\" or \"a.exe filename # #\"" << "\n";
         return 0;
     }
+    //Open file
     std::string filename = argv[1];
     std::fstream myfile (filename.c_str());
     if(!(myfile)){
-        std::cout << "The file was not opened" << std::endl;
+        std::cout << "The file was not opened. Check your spelling, the name is case sensitive." << std::endl;
         return 0;
     }
     
     std::string holder;
     std::vector<std::string> input;
-    getline(myfile, holder);
+    
+    getline(myfile, holder); //clear the literal P2
     bool parseFlag = true;
+    //Get the column and row values. Clear any comments.
     int col = 0, row = 0;
     while(parseFlag){
         getline(myfile, holder, ' ');
@@ -333,12 +315,14 @@ int main(int argc, char *argv[]) {
             return 0;
         }
     }
-    
+    //Create object to parse the file
     Picture myPic(col, row);
+    //Save the scale value
     getline(myfile, holder);
     myPic.setScale(std::stoi(holder));
+    //Read the file in, number by number. Ignore comments. Values are loaded without respect
+    //To spaces or endlines, they will be entered according to the column and row values
     while(myfile){
-    
         myfile >> holder;
         if(holder[0] == '#'){
             getline(myfile, holder);
@@ -348,12 +332,13 @@ int main(int argc, char *argv[]) {
         }
     }
     myfile.close();
+    //Determine the number of loops needed
     int index = 0;
     std::string valueHolder = argv[2];
     int verticalCuts = stoi(valueHolder);
     valueHolder = argv[3];
     int horizontalCuts = stoi(valueHolder);
-
+    //Execute the seam cuts one by one. First vertical, then horizontal
     if(verticalCuts > 0){
         for (int i = verticalCuts; i > 0; i--){
             myPic.carve();
@@ -365,10 +350,10 @@ int main(int argc, char *argv[]) {
             myPic.carveHorizontal();
         }
     }
-
+    //Output the file
     std::size_t position = filename.find(".pgm");
     filename = filename.substr(0, position);
-    filename += "_processedHRP_" + std::to_string(verticalCuts) +"_" + std::to_string(horizontalCuts) + ".pgm";
+    filename += "_processed_" + std::to_string(verticalCuts) +"_" + std::to_string(horizontalCuts) + ".pgm";
     std::fstream outputFile(filename.c_str(), std::fstream::out);
     
     myPic.output(outputFile);
