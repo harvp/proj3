@@ -3,6 +3,7 @@
 #include <fstream>
 #include <vector>
 #include <cmath>
+#include <algorithm>
 
 class Picture{
 private:
@@ -65,29 +66,14 @@ private:
              for (int j = 0; j < col; j++){
                  
                  if (i != 0){ //not top or bottom row
-                     if ((j != 0) && (j != col-1)){ //not right or left border
-                         upLeft = cumulativeMatrix[i-1][j-1];
-                         upCenter = cumulativeMatrix[i-1][j];
-                         upRight = cumulativeMatrix[i-1][j+1];
+                     if (j == 0){ //left border
+                         minInt = mini(999999,cumulativeMatrix[i-1][j],cumulativeMatrix[i-1][j+1]);
                      }
-                     else if (j == 0){ //left border
-                         upLeft = 999999;
-                         upCenter = cumulativeMatrix[i-1][j];
-                         upRight = cumulativeMatrix[i-1][j+1];
-                     }
-                     else{ //right border
-                         upLeft = cumulativeMatrix[i-1][j-1];
-                         upCenter = cumulativeMatrix[i-1][j];
-                         upRight = 999999;
-                     }
-                     if((upRight < upCenter) && (upRight < upLeft)) {
-                         minInt = upRight;
-                     }
-                     else if((upCenter < upRight) && (upCenter < upLeft)){
-                         minInt = upCenter;
+                     else if (j == col-1){ //right border
+                         minInt = mini(cumulativeMatrix[i-1][j-1],cumulativeMatrix[i-1][j],999999);
                      }
                      else{
-                         minInt = upLeft;
+                         minInt = mini(cumulativeMatrix[i-1][j-1],cumulativeMatrix[i-1][j],cumulativeMatrix[i-1][j+1]);
                      }
 
                      minInt = energyMatrix[i][j] + minInt;
@@ -274,12 +260,8 @@ public:
             }
 
             minIndex = indexHolder;
-            if (indexHolder < main[i].size()){
-            main[i].erase(main[i].begin() + indexHolder);}
-            else{
-            std::cout << "EEK" << std::endl;
-                main[i].pop_back();
-            }
+            main[i].erase(main[i].begin() + indexHolder);
+
             
             
         }
@@ -297,7 +279,7 @@ public:
     void output(std::fstream& file){
     
         file << "P2" << std::endl;
-        file << "#Created by InfranView" << std::endl;
+        file << "# Created by InfranView" << std::endl;
         file << col << " " << row << std::endl;
         file << scale << std::endl;
          for (int i = 0; i < main.size(); i++){
@@ -306,6 +288,12 @@ public:
              }
              file << std::endl;
          }
+    }
+    
+    int mini(int a, int b, int c){
+    
+        return std::min(a, std::min(b, c));
+        
     }
 };
 
